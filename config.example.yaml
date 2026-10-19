@@ -1,0 +1,42 @@
+# Скопируйте в config.yaml. Значения ${VAR} / ${VAR:-default} берутся из окружения.
+# demo: true            # принудительно включить демо-данные
+
+cache_ttl: 30           # секунд держать результат опроса в кэше
+min_refresh: 5          # кнопка "Опросить" не чаще раза в N секунд
+
+# Basic-auth на веб-интерфейс (или переменные ROUTEMAP_USER / ROUTEMAP_PASSWORD)
+# auth:
+#   user: admin
+#   password: ${ROUTEMAP_PASSWORD}
+
+defaults:               # общие поля для всех роутеров
+  username: routemap
+  password: ${MT_PASSWORD}
+  verify_tls: false
+  timeout: 10
+
+routers:
+  # RouterOS 7 — REST API (нужен включённый www-ssl или www)
+  - name: hq
+    host: 192.168.88.1
+    transport: rest     # rest (https:443) | http (http:80) | api (8728) | api-ssl (8729) | opnsense
+    public_ips: [203.0.113.10]   # внешние IP за NAT — помогают сопоставить туннели с роутерами
+
+  - name: branch1
+    host: 10.99.0.2
+    transport: rest
+    port: 8443
+
+  # RouterOS 6 — только классический API
+  - name: branch2
+    host: 10.10.10.2
+    transport: api
+    password: ${MT_BRANCH2_PASSWORD}
+    max_routes: 2000    # защита от full-view BGP
+
+  # OPNsense — REST API, ключ и секрет из System → Access → Users → API keys
+  - name: opnsense
+    host: 192.168.56.1
+    transport: opnsense
+    username: ${OPN_KEY}
+    password: ${OPN_SECRET}

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MikroTik Route Map</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="brand">MikroTik <b>Route Map</b> <span id="demo-badge" class="badge" hidden>демо</span></div>
+  <div class="status" id="status">загрузка…</div>
+  <div class="actions">
+    <select id="auto" title="Автообновление">
+      <option value="0">авто: выкл</option>
+      <option value="30">авто: 30 с</option>
+      <option value="60">авто: 1 мин</option>
+      <option value="300">авто: 5 мин</option>
+    </select>
+    <button id="btn-refresh" class="primary">Опросить роутеры</button>
+    <button id="btn-layout" title="Пересчитать раскладку (сбросит ручное расположение)">Раскладка</button>
+    <button id="btn-fit">Вписать</button>
+  </div>
+</header>
+
+<main>
+  <aside>
+    <nav class="tabs">
+      <button data-tab="filters" class="active">Вид</button>
+      <button data-tab="trace">Трассировка</button>
+      <button data-tab="tunnels">Туннели</button>
+      <button data-tab="routers">Роутеры</button>
+    </nav>
+
+    <section id="tab-filters" class="tab active">
+      <h3>Таблицы маршрутизации</h3>
+      <div id="f-tables" class="chips"></div>
+      <h3>Протоколы</h3>
+      <div id="f-protocols" class="chips"></div>
+      <h3>Показывать</h3>
+      <label class="check"><input type="checkbox" id="f-inactive" checked> неактивные маршруты</label>
+      <label class="check"><input type="checkbox" id="f-default" checked> маршруты по умолчанию</label>
+      <label class="check"><input type="checkbox" id="f-downpeers"> WireGuard-peer'ы без подключения <span class="muted" id="hidden-peers"></span></label>
+      <label class="check"><input type="checkbox" id="f-labels" checked> подписи на линиях</label>
+      <label class="check"><input type="checkbox" id="f-vpnonly"> только сети за VPN</label>
+      <h3>Легенда</h3>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <section id="tab-trace" class="tab">
+      <p class="hint">Куда пойдёт пакет: поиск по таблицам маршрутизации, правилам <code>/routing rule</code> и IPsec-политикам, с переходом между опрашиваемыми роутерами.</p>
+      <label>Откуда (роутер)<select id="t-router"></select></label>
+      <label>Адрес назначения<input id="t-dst" placeholder="192.168.30.15" autocomplete="off"></label>
+      <label>Адрес источника <span class="muted">(для policy routing)</span><input id="t-src" placeholder="необязательно" autocomplete="off"></label>
+      <label>Таблица <span class="muted">(иначе — по правилам)</span><select id="t-table"><option value="">авто</option></select></label>
+      <div class="row">
+        <button id="t-run" class="primary">Трассировать</button>
+        <button id="t-clear">Сбросить</button>
+      </div>
+      <ol id="t-result" class="steps"></ol>
+    </section>
+
+    <section id="tab-tunnels" class="tab">
+      <div id="tunnels"></div>
+    </section>
+
+    <section id="tab-routers" class="tab">
+      <div id="routers"></div>
+      <div id="router-detail"></div>
+    </section>
+  </aside>
+
+  <div id="canvas">
+    <div id="cy"></div>
+    <div id="details" hidden>
+      <button class="close" id="details-close" aria-label="Закрыть">×</button>
+      <div id="details-body"></div>
+    </div>
+    <div id="error" hidden></div>
+  </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+services:
+  routemap:
+    build: .
+    ports: ["8080:8080"]
+    volumes: ["./config.yaml:/config/config.yaml:ro"]
+    environment:
+      MT_PASSWORD: ${MT_PASSWORD}
+      ROUTEMAP_USER: ${ROUTEMAP_USER:-}
+      ROUTEMAP_PASSWORD: ${ROUTEMAP_PASSWORD:-}
+    restart: unless-stopped
